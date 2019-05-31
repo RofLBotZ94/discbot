@@ -3,6 +3,7 @@ import random
 import asyncio
 import youtube_dl
 from datetime import timedelta
+import os
 
 pybot = discord.Client()
 
@@ -653,4 +654,4 @@ async def on_guild_channel_delete(channel):
             break
 
 
-pybot.run('NTcyMjMyMjkyOTI4NTg1NzUx.XMZS6Q.loqodPhFHs1rEdU3kO81kKxffWI')
+pybot.run(str(os.environ.get('BOT_TOKEN')))
