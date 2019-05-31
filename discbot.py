@@ -241,6 +241,8 @@ async def on_message(message):
         return
     elif len(message.content) == 0:
         return
+    elif str(message.channel.category) != 'Bot' and message.content.find('create_secret') == -1 and message.content.find('soft_ban') == -1 and message.content.find('soft_ban_voice') == -1 and message.content.find('bulk_del') == -1:
+        return
 
     is_command = False
 
