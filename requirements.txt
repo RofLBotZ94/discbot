@@ -1,5 +1,4 @@
 discord
 asyncio
-random
 youtube_dl
 datetime
