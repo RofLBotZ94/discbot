@@ -5,9 +5,6 @@ import youtube_dl
 from datetime import timedelta
 import os
 
-if not discord.opus.is_loaded():
-    discord.opus.load_opus('opus')
-
 pybot = discord.Client()
 
 ydl = youtube_dl.YoutubeDL({
