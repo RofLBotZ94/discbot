@@ -229,7 +229,7 @@ async def on_ready():
     print('Christian bot bitches!')
     print('API version:', discord.__version__)
     app_info = await pybot.application_info()
-    await pybot.change_presence(status=discord.Status.online, activity=discord.Game(name='No Swearing! This is a Christian Channel! Made by '+ str(app_info.owner) +'\nBeta Build...'))
+    await pybot.change_presence(status=discord.Status.online, activity=discord.Game(name='True Believers Unite F*** google! Made by '+ str(app_info.owner) +'\nBeta Build...'))
 
 
 @pybot.event
