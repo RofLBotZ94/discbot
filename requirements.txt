@@ -2,3 +2,4 @@ discord==1.0.1
 asyncio
 youtube_dl
 datetime
+opuslib
