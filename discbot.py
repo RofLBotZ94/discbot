@@ -632,7 +632,7 @@ async def on_voice_state_update(member, before, after):
         try:
             while not channel_playlist[before.channel.name].empty():
                 await channel_playlist[before.channel.name].get()
-            voice_clients[before.channel.name].stop()
+            voice_clients.pop(before.channel.name)
         except KeyError:
             pass
 
