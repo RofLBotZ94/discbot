@@ -620,7 +620,7 @@ async def on_message_delete(message):
 
 @pybot.event
 async def on_raw_bulk_message_delete(payload):
-    await pybot.get_channel(payload.channel_id).send(str(len(payload.message_ids)) + ' messages have been deleted!', delete_after=10)
+    await pybot.get_channel(payload.channel_id).send(str(len(payload.message_ids)) + ' messages have been deleted!', delete_after=1)
 
 
 @pybot.event
