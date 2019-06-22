@@ -270,7 +270,7 @@ async def on_message(message):
             elif command.lower().find('image') != -1:
                 with open('Crusades.jpg', 'rb') as pic:
                     await message.channel.send('Glory to Christ!:crossed_swords::cross:', file=discord.File(pic))
-            elif command.split(' ')[0].lower() == 'soft_ban'.lower():
+            elif command.lower().find('soft_ban') != -1:
                 if get_username(message.channel.guild.owner.mention) != get_username(message.author.mention):
                     await message.channel.send('You are not the owner of this server ' + message.author.mention + ', you filthy non-believer', delete_after=5)
                 else:
