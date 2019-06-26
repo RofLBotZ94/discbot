@@ -1,6 +1,6 @@
 discord==1.0.1
 asyncio
-youtube_dl
+youtube_dl==2019.06.21
 datetime
 opuslib
 PyNaCl
