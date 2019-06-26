@@ -6,6 +6,7 @@ from datetime import timedelta
 import requests
 from PIL import Image
 from io import BytesIO
+import os
 
 pybot = discord.Client()
 
@@ -757,4 +758,4 @@ async def on_guild_channel_delete(channel):
             break
 
 
-pybot.run('NTcyMjMyMjkyOTI4NTg1NzUx.XPCD3w.t0rEhyZw9yVWg1YHQNbeGVk97EA')
+pybot.run(str(os.environ.get('BOT_TOKEN')))
