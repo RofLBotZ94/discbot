@@ -4,3 +4,5 @@ youtube_dl
 datetime
 opuslib
 PyNaCl
+requests
+pillow
