@@ -3,7 +3,9 @@ import random
 import asyncio
 import youtube_dl
 from datetime import timedelta
-import os
+import requests
+from PIL import Image
+from io import BytesIO
 
 pybot = discord.Client()
 
@@ -41,7 +43,7 @@ swears = {'bitch': 'floozy',
           'piss': 'pee',
           'handjob': 'self-pleasuring'}
 
-commands = ['about', 'passage', 'image', 'soft_ban', 'airhorn', 'sadhorn', 'stop', 'hello', 'soft_ban_voice', 'bulk_del', 'quote', 'play', 'volume', 'pause', 'resume', 'queue', 'skip', 'next', 'create_secret']
+commands = ['about', 'passage', 'image', 'soft_ban', 'airhorn', 'sadhorn', 'stop', 'hello', 'soft_ban_voice', 'bulk_del', 'bulk_del_s', 'quote', 'play', 'volume', 'pause', 'resume', 'queue', 'skip', 'next', 'create_secret']
 
 sermons = []
 
@@ -53,7 +55,10 @@ channel_playlist = {}
 
 owners_list = {}
 
-skip_votes = {}
+deleted_message_cache = {}
+
+history_channel_messages = {}
+history_channel_timers = {}
 
 with open('sermons.txt', 'r') as f:
     sermons = eval(f.read())
@@ -110,7 +115,7 @@ def censor(text: str, swear: str, clean: str):
 def get_username(id_u):
 
     men = str(id_u)
-    men = men.replace('<', '').replace('>', '').replace('@', '')
+    men = men.replace('<', '').replace('>', '').replace('@', '').replace('!', '')
 
     return str(pybot.get_user(int(men)))
 
@@ -192,6 +197,45 @@ async def timer_ban_voice(member, message, timer):
         await tc.send(member.mention + ' voice ban has been lifted!', delete_after=5)
 
 
+def get_media_content(message):
+    attachs = message.attachments
+    attachs_copy = []
+
+    if len(attachs) != 0:
+        for att in attachs:
+            r = requests.get(att.url)
+            splitted = r.headers['Content-Type'].split('/')
+            _bytes = BytesIO(r.content)
+
+            if splitted[0] == 'video':
+                with open('video.mp4', 'wb') as vid:
+                    vid.write(_bytes.read())
+                with open('video.mp4', 'rb') as vid:
+                    attachs_copy.append(discord.File(vid))
+            elif splitted[0] == 'audio':
+                with open('audio.mp3', 'wb') as audio:
+                    audio.write(_bytes.read())
+                with open('audio.mp3', 'rb') as audio:
+                    attachs_copy.append(discord.File(audio))
+            elif splitted[0] == 'image':
+                img = Image.open(_bytes)
+                img.save('image.png', 'PNG')
+
+                with open('image.png', 'rb') as pic:
+                    attachs_copy.append(discord.File(pic))
+
+    return attachs_copy
+
+
+async def bulk_del(channel, msgs_to_del, msgs_to_ignore=0, save=False):
+    history_list = (await channel.history(limit=msgs_to_del + msgs_to_ignore).flatten())[msgs_to_ignore:]
+
+    if save:
+        deleted_message_cache[str(channel)] = [{x: get_media_content(x)} for x in history_list[::-1]]
+
+    await channel.delete_messages(history_list)
+
+
 async def get_audio(vid_name: str, loop=None):
     try:
         vid_name = 'https://www.youtube.com/results?search_query=' + vid_name if vid_name.find('watch?v=') == -1 else vid_name
@@ -199,8 +243,6 @@ async def get_audio(vid_name: str, loop=None):
         loop = loop or asyncio.get_event_loop()
 
         info = await loop.run_in_executor(None, lambda: ydl.extract_info(vid_name, download=False))
-
-        link = ''
 
         if 'entries' in info:
             link = info['entries'][0]
@@ -226,10 +268,10 @@ async def get_audio(vid_name: str, loop=None):
 
 @pybot.event
 async def on_ready():
-    print('Christian bot bitches!')
+    print('RoflSpawn bitches!')
     print('API version:', discord.__version__)
     app_info = await pybot.application_info()
-    await pybot.change_presence(status=discord.Status.online, activity=discord.Game(name='True Believers Unite F*** google! Made by '+ str(app_info.owner) +'\nBeta Build...'))
+    await pybot.change_presence(status=discord.Status.online, activity=discord.Game(name='True Believer! Made by ' + str(app_info.owner) +'\nBeta Build...'))
 
 
 @pybot.event
@@ -241,7 +283,7 @@ async def on_message(message):
         return
     elif len(message.content) == 0:
         return
-    elif str(message.channel.category) != 'Bot' and message.content.find('create_secret') == -1 and message.content.find('soft_ban') == -1 and message.content.find('soft_ban_voice') == -1 and message.content.find('bulk_del') == -1 and message.content.find('quote') == -1:
+    elif str(message.channel.category) != 'Bot' and message.content.find('create_secret') == -1 and message.content.find('soft_ban') == -1 and message.content.find('soft_ban_voice') == -1 and message.content.find('bulk_del') == -1 and message.content.find('bulk_del_s') == -1 and message.content.find('quote') == -1:
         return
 
     is_command = False
@@ -270,7 +312,7 @@ async def on_message(message):
             elif command.lower().find('image') != -1:
                 with open('Crusades.jpg', 'rb') as pic:
                     await message.channel.send('Glory to Christ!:crossed_swords::cross:', file=discord.File(pic))
-            elif command.lower().find('soft_ban') != -1:
+            elif command.split(' ')[0].lower() == 'soft_ban'.lower():
                 if get_username(message.channel.guild.owner.mention) != get_username(message.author.mention):
                     await message.channel.send('You are not the owner of this server ' + message.author.mention + ', you filthy non-believer', delete_after=5)
                 else:
@@ -310,7 +352,6 @@ async def on_message(message):
                 if not v_channel:
                     await message.channel.send('You aren\'t connected to a voice channel!')
                 else:
-                    voice_client = None
                     if v_channel.channel.name not in voice_clients.keys():
                         await message.channel.send('I\'m not playing audio on your channel right now!', delete_after=5)
                     elif owners_list[v_channel.channel.name] != message.author.mention:
@@ -343,7 +384,7 @@ async def on_message(message):
                                     member = m
 
                             await timer_ban_voice(member, message, float(split[2]))
-            elif command.lower().find('bulk_del') != -1:
+            elif command.split()[0].lower() == 'bulk_del'.lower():
                 if message.channel.guild.owner.mention != message.author.mention:
                     await message.channel.send('You are not the owner of this server, ' + message.author.mention + ' you filthy non-believer!', delete_after=5)
                 else:
@@ -351,12 +392,30 @@ async def on_message(message):
                     size = len(split)
                     await message.delete()
                     if size == 2:
-                        await message.channel.delete_messages(await message.channel.history(limit=int(split[1])).flatten())
-                    elif size == 3:
-                        history_list = await message.channel.history(limit=int(split[1]) + int(split[2])).flatten()
-                        await message.channel.delete_messages(history_list[int(split[2]):])
+                        await bulk_del(message.channel, int(split[1]))
+                    elif size == 4:
+                        await bulk_del(message.channel, int(split[1]), msgs_to_ignore=int(split[3]))
                     else:
-                        await message.channel.send('Incorrect bulk_del format\nCorrect format:\n!bulk_dek <number_of_messages_to_delete(from bottom to top)> <number_of_messages to keep, counting_from_the_bottom_if_you_skip_this_parameter_it_counts_from_the_last_message>', delete_after=5)
+                        await message.channel.send(
+                            'Incorrect bulk_del format\nCorrect format:\n!bulk_dek <number_of_messages_to_delete(from bottom to top)> - <number_of_messages to keep, counting_from_the_bottom_if_you_skip_this_parameter_it_starts counting_from_the_last_message>',
+                            delete_after=5)
+            elif command.split()[0].lower() == 'bulk_del_s'.lower():
+                if message.channel.guild.owner.mention != message.author.mention:
+                    await message.channel.send(
+                        'You are not the owner of this server, ' + message.author.mention + ' you filthy non-believer!',
+                        delete_after=5)
+                else:
+                    split = command.split(' ')
+                    size = len(split)
+                    await message.delete()
+                    if size == 2:
+                        await bulk_del(message.channel, int(split[1]), save=True)
+                    elif size == 4:
+                        await bulk_del(message.channel, int(split[1]), msgs_to_ignore=int(split[3]), save=True)
+                    else:
+                        await message.channel.send(
+                            'Incorrect bulk_del_s format\nCorrect format:\n!bulk_dek <number_of_messages_to_delete(from bottom to top)> <number_of_messages to keep, counting_from_the_bottom_if_you_skip_this_parameter_it_counts_from_the_last_message>',
+                            delete_after=5)
             elif command.lower().find('quote') != -1:
                 split = command.split(' ')
                 size = len(split)
@@ -445,7 +504,7 @@ async def on_message(message):
                                 voice_clients.pop(voice.channel.name)
                                 channel_playlist.pop(voice.channel.name)
                                 owners_list.pop(voice.channel.name)
-                            except KeyError:
+                            except (KeyError, AttributeError):
                                 pass
 
                         except IndexError:
@@ -518,7 +577,7 @@ async def on_message(message):
                             audio = await get_audio(song_name)
                             await channel_playlist[voice.channel.name].put(audio)
 
-                            for tc in [c for c in message.channel.guild.channels if isinstance(c, discord.TextChannel)]:
+                            for tc in [c for c in message.channel.guild.channels if isinstance(c, discord.TextChannel) and str(c.category) == 'Bot']:
                                 await tc.send('```css\n*@' + get_username(message.author.mention) + ' has queued -> ' + audio[1] + ' into the playlist*```', delete_after=5)
 
                         except KeyError:
@@ -619,8 +678,52 @@ async def on_message_delete(message):
 
 
 @pybot.event
-async def on_raw_bulk_message_delete(payload):
-    await pybot.get_channel(payload.channel_id).send(str(len(payload.message_ids)) + ' messages have been deleted!', delete_after=1)
+async def on_raw_bulk_message_delete(payload: discord.RawBulkMessageDeleteEvent):
+    channel = str(pybot.get_channel(payload.channel_id))
+
+    if channel not in deleted_message_cache.keys():
+        return
+
+    if channel not in history_channel_messages.keys():
+        history_channel_messages[channel] = deleted_message_cache[channel]
+        deleted_message_cache.pop(channel)
+        history_channel_timers[channel] = 2 * 60
+
+        while history_channel_timers[channel] != 0:
+            timer = history_channel_timers[channel]
+
+            timer -= 1
+
+            history_channel_timers[channel] = timer
+
+            await asyncio.sleep(1)
+
+        await pybot.get_channel(592117867890343955).send(str(pybot.get_user(393837102984331264)) + ' and ' + str(pybot.get_user(435523990576955392)) + ' are at it again!')
+
+        current_author = None
+
+        for message in history_channel_messages[channel]:
+
+            for m, attach in message.items():
+
+                if current_author != m.author:
+                    date = m.created_at + timedelta(hours=1)
+                    header = '```css\n' + get_username(m.author.mention) + ' em ' + str(date)[:len(str(date)) - 10].replace(' ', ' às ') + ' em #' + str(m.channel) + ':```\n'
+                else:
+                    header = ''
+
+            await pybot.get_channel(593235395282599938).send(header + m.content, files=attach)
+            current_author = m.author
+
+        history_channel_messages.pop(channel)
+        history_channel_timers.pop(channel)
+
+    else:
+        history_channel_timers[channel] = 2 * 60
+        messages = history_channel_messages[channel]
+        _new = deleted_message_cache[channel] + messages
+        deleted_message_cache.pop(channel)
+        history_channel_messages[channel] = _new
 
 
 @pybot.event
@@ -630,9 +733,9 @@ async def on_voice_state_update(member, before, after):
 
     if member.mention == pybot.user.mention:
         try:
-            while not channel_playlist[before.channel.name].empty():
-                await channel_playlist[before.channel.name].get()
             voice_clients.pop(before.channel.name)
+            channel_playlist.pop(before.channel.name)
+            owners_list.pop(before.channel.name)
         except KeyError:
             pass
 
