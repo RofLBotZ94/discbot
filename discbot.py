@@ -698,7 +698,7 @@ async def on_raw_bulk_message_delete(payload: discord.RawBulkMessageDeleteEvent)
 
             await asyncio.sleep(1)
 
-        await pybot.get_channel(int(os.environ.get('ARQUIVE'))).send(str(pybot.get_user(int(os.environ.get('NN')))) + ' and ' + str(pybot.get_user(int(os.environ.get('RB')))) + ' are at it again!')
+        await pybot.get_channel(592117867890343955).send(str(pybot.get_user(393837102984331264)) + ' and ' + str(pybot.get_user(435523990576955392)) + ' are at it again!')
 
         current_author = None
 
@@ -712,7 +712,7 @@ async def on_raw_bulk_message_delete(payload: discord.RawBulkMessageDeleteEvent)
                 else:
                     header = ''
 
-            await pybot.get_channel(int(os.environ.get('ARQUIVE'))).send(header + m.content, files=attach)
+            await pybot.get_channel(593235395282599938).send(header + m.content, files=attach)
             current_author = m.author
 
         history_channel_messages.pop(channel)
@@ -757,4 +757,4 @@ async def on_guild_channel_delete(channel):
             break
 
 
-pybot.run(str(os.environ.get('BOT_TOKEN')))
+pybot.run('NTcyMjMyMjkyOTI4NTg1NzUx.XPCD3w.t0rEhyZw9yVWg1YHQNbeGVk97EA')
