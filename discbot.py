@@ -4,9 +4,8 @@ import asyncio
 import youtube_dl
 from datetime import timedelta
 import requests
-from PIL import Image
-from io import BytesIO
 import os
+from io import BytesIO
 
 pybot = discord.Client()
 
@@ -199,30 +198,39 @@ async def timer_ban_voice(member, message, timer):
 
 
 def get_media_content(message):
+
+    def number_files(_name):
+        return len([x for x in os.listdir('.') if x.startswith(_name)])
+
     attachs = message.attachments
     attachs_copy = []
 
     if len(attachs) != 0:
-        for att in attachs:
+        for i, att in enumerate(attachs):
             r = requests.get(att.url)
             splitted = r.headers['Content-Type'].split('/')
             _bytes = BytesIO(r.content)
 
             if splitted[0] == 'video':
-                with open('video.mp4', 'wb') as vid:
+                num = number_files('video')
+                name = 'video.mp4' if num == 0 else 'video(' + str(num) + ').mp4'
+                with open(name, 'wb') as vid:
                     vid.write(_bytes.read())
-                with open('video.mp4', 'rb') as vid:
+                with open(name, 'rb') as vid:
                     attachs_copy.append(discord.File(vid))
             elif splitted[0] == 'audio':
-                with open('audio.mp3', 'wb') as audio:
+                num = number_files('audio')
+                name = 'audio.mp3' if num == 0 else 'audio(' + str(num) + ').mp3'
+                with open(name, 'wb') as audio:
                     audio.write(_bytes.read())
-                with open('audio.mp3', 'rb') as audio:
+                with open(name, 'rb') as audio:
                     attachs_copy.append(discord.File(audio))
             elif splitted[0] == 'image':
-                img = Image.open(_bytes)
-                img.save('image.png', 'PNG')
-
-                with open('image.png', 'rb') as pic:
+                num = number_files('image')
+                name = 'image.png' if num == 0 else 'image(' + str(num) + ').png'
+                with open(name, 'wb') as pic:
+                    pic.write(_bytes.read())
+                with open(name, 'rb') as pic:
                     attachs_copy.append(discord.File(pic))
 
     return attachs_copy
@@ -273,6 +281,12 @@ async def on_ready():
     print('API version:', discord.__version__)
     app_info = await pybot.application_info()
     await pybot.change_presence(status=discord.Status.online, activity=discord.Game(name='True Believer! Made by ' + str(app_info.owner) +'\nBeta Build...'))
+    try:
+        for i in os.listdir('.'):
+            if i.startswith('video') or i.startswith('audio') or i.startswith('image'):
+                os.remove(i)
+    except PermissionError:
+        pass
 
 
 @pybot.event
@@ -667,15 +681,51 @@ async def on_message(message):
 
 @pybot.event
 async def on_message_delete(message):
-    has_swears = False
+    channel = str(message.channel)
 
-    for s in swears.keys():
-        if len(index_of(message.content, s)) != 0:
-            has_swears = True
-            break
-
-    if has_swears or message.author.mention == pybot.user.mention:
+    if channel not in deleted_message_cache.keys():
         return
+
+    if channel not in history_channel_messages.keys():
+        history_channel_messages[channel] = deleted_message_cache[channel]
+        deleted_message_cache.pop(channel)
+        history_channel_timers[channel] = 2 * 60
+
+        while history_channel_timers[channel] != 0:
+            timer = history_channel_timers[channel]
+
+            timer -= 1
+
+            history_channel_timers[channel] = timer
+
+            await asyncio.sleep(1)
+
+        await pybot.get_channel(593235395282599938).send(str(pybot.get_user(393837102984331264)) + ' and ' + str(pybot.get_user(435523990576955392)) + ' are at it again!')
+
+        current_author = None
+
+        for message in history_channel_messages[channel]:
+
+            for m, attach in message.items():
+
+                if current_author != m.author:
+                    date = m.created_at + timedelta(hours=1)
+                    header = '```css\n' + get_username(m.author.mention) + ' em ' + str(date)[:len(str(date)) - 10].replace(' ', ' às ') + ' em #' + str(m.channel) + ':```\n'
+                else:
+                    header = ''
+
+            await pybot.get_channel(593235395282599938).send(header + m.content, files=attach)
+            current_author = m.author
+
+        history_channel_messages.pop(channel)
+        history_channel_timers.pop(channel)
+
+    else:
+        history_channel_timers[channel] = 2 * 60
+        messages = history_channel_messages[channel]
+        _new = deleted_message_cache[channel] + messages
+        deleted_message_cache.pop(channel)
+        history_channel_messages[channel] = _new
 
 
 @pybot.event
@@ -699,7 +749,7 @@ async def on_raw_bulk_message_delete(payload: discord.RawBulkMessageDeleteEvent)
 
             await asyncio.sleep(1)
 
-        await pybot.get_channel(int(os.environ.get('ARCHIVE'))).send(str(pybot.get_user(int(os.environ.get('NN')))) + ' and ' + str(pybot.get_user(int(os.environ.get('RB')))) + ' are at it again!')
+        await pybot.get_channel(592117867890343955).send(str(pybot.get_user(393837102984331264)) + ' and ' + str(pybot.get_user(435523990576955392)) + ' are at it again!')
 
         current_author = None
 
@@ -713,7 +763,7 @@ async def on_raw_bulk_message_delete(payload: discord.RawBulkMessageDeleteEvent)
                 else:
                     header = ''
 
-            await pybot.get_channel(int(os.environ.get('ARCHIVE'))).send(header + m.content, files=attach)
+            await pybot.get_channel(592117867890343955).send(header + m.content, files=attach)
             current_author = m.author
 
         history_channel_messages.pop(channel)
@@ -758,4 +808,4 @@ async def on_guild_channel_delete(channel):
             break
 
 
-pybot.run(str(os.environ.get('BOT_TOKEN')))
+pybot.run('NTcyMjMyMjkyOTI4NTg1NzUx.XPCD3w.t0rEhyZw9yVWg1YHQNbeGVk97EA')
