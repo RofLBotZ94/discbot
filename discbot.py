@@ -328,8 +328,8 @@ async def on_message(message):
                 with open('Crusades.jpg', 'rb') as pic:
                     await message.channel.send('Glory to Christ!:crossed_swords::cross:', file=discord.File(pic))
             elif command.split(' ')[0].lower() == 'soft_ban'.lower():
-                if get_username(message.channel.guild.owner.mention) != get_username(message.author.mention):
-                    await message.channel.send('You are not the owner of this server ' + message.author.mention + ', you filthy non-believer', delete_after=5)
+                if str(message.author.top_role).lower() == 'Admin'.lower():
+                    await message.channel.send('You are not and admin of this server ' + message.author.mention + ', you filthy non-believer', delete_after=5)
                 else:
                     split = command.split(' ')
                     size = len(split)
@@ -380,8 +380,8 @@ async def on_message(message):
                         voice_client.stop()
 
             elif command.split(' ')[0].lower() == 'soft_ban_voice'.lower():
-                if get_username(message.channel.guild.owner.mention) != get_username(message.author.mention):
-                    await message.channel.send('You are not the owner of this server ' + message.author.mention + ', you filthy non-believer', delete_after=5)
+                if str(message.author.top_role).lower() == 'Admin'.lower():
+                    await message.channel.send('You are not and admin of this server ' + message.author.mention + ', you filthy non-believer', delete_after=5)
                 else:
                     split = command.split(' ')
                     size = len(split)
@@ -400,8 +400,8 @@ async def on_message(message):
 
                             await timer_ban_voice(member, message, float(split[2]))
             elif command.split()[0].lower() == 'bulk_del'.lower():
-                if message.channel.guild.owner.mention != message.author.mention:
-                    await message.channel.send('You are not the owner of this server, ' + message.author.mention + ' you filthy non-believer!', delete_after=5)
+                if str(message.author.top_role).lower() == 'Admin'.lower():
+                    await message.channel.send('You are not an admin of this server, ' + message.author.mention + ' you filthy non-believer!', delete_after=5)
                 else:
                     split = command.split(' ')
                     size = len(split)
@@ -415,9 +415,9 @@ async def on_message(message):
                             'Incorrect bulk_del format\nCorrect format:\n!bulk_dek <number_of_messages_to_delete(from bottom to top)> - <number_of_messages to keep, counting_from_the_bottom_if_you_skip_this_parameter_it_starts counting_from_the_last_message>',
                             delete_after=5)
             elif command.split()[0].lower() == 'bulk_del_s'.lower():
-                if message.channel.guild.owner.mention != message.author.mention:
+                if str(message.author.top_role).lower() == 'Admin'.lower():
                     await message.channel.send(
-                        'You are not the owner of this server, ' + message.author.mention + ' you filthy non-believer!',
+                        'You are not an admin of this server, ' + message.author.mention + ' you filthy non-believer!',
                         delete_after=5)
                 else:
                     split = command.split(' ')
