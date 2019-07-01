@@ -700,7 +700,7 @@ async def on_message_delete(message):
 
             await asyncio.sleep(1)
 
-        await pybot.get_channel(593235395282599938).send(str(pybot.get_user(393837102984331264)) + ' and ' + str(pybot.get_user(435523990576955392)) + ' are at it again!')
+        await pybot.get_channel(int(os.environ.get('ARCHIVE'))).send(str(pybot.get_user(int(os.environ.get('NN')))) + ' and ' + str(pybot.get_user(int(os.environ.get('RB')))) + ' are at it again!')
 
         current_author = None
 
@@ -714,7 +714,7 @@ async def on_message_delete(message):
                 else:
                     header = ''
 
-            await pybot.get_channel(593235395282599938).send(header + m.content, files=attach)
+            await pybot.get_channel(int(os.environ.get('ARCHIVE'))).send(header + m.content, files=attach)
             current_author = m.author
 
         history_channel_messages.pop(channel)
@@ -776,7 +776,12 @@ async def on_raw_bulk_message_delete(payload: discord.RawBulkMessageDeleteEvent)
         deleted_message_cache.pop(channel)
         history_channel_messages[channel] = _new
 
+        
+@pybot.event
+async def on_member_remove(member: discord.Member):
+    await member.guild.system_channel.send(str(member) + ' has left the server!!\nFuck him! Who needs him anyway?\n:rage:')
 
+    
 @pybot.event
 async def on_voice_state_update(member, before, after):
     if not before.channel:
