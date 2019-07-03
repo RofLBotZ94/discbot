@@ -43,7 +43,7 @@ swears = {'bitch': 'floozy',
           'piss': 'pee',
           'handjob': 'self-pleasuring'}
 
-commands = ['about', 'passage', 'image', 'soft_ban', 'airhorn', 'sadhorn', 'stop', 'hello', 'soft_ban_voice', 'bulk_del', 'bulk_del_s', 'quote', 'play', 'volume', 'pause', 'resume', 'queue', 'skip', 'next', 'create_secret']
+commands = ['ping', 'about', 'passage', 'image', 'soft_ban', 'airhorn', 'sadhorn', 'stop', 'hello', 'soft_ban_voice', 'bulk_del', 'bulk_del_s', 'quote', 'play', 'volume', 'pause', 'resume', 'queue', 'skip', 'next', 'create_secret']
 
 sermons = []
 
@@ -298,7 +298,7 @@ async def on_message(message):
         return
     elif len(message.content) == 0:
         return
-    elif str(message.channel.category) != 'Bot' and message.content.find('create_secret') == -1 and message.content.find('soft_ban') == -1 and message.content.find('soft_ban_voice') == -1 and message.content.find('bulk_del') == -1 and message.content.find('bulk_del_s') == -1 and message.content.find('quote') == -1:
+    elif str(message.channel.category) != 'Bot' and message.content.find('create_secret') == -1 and message.content.find('soft_ban') == -1 and message.content.find('soft_ban_voice') == -1 and message.content.find('bulk_del') == -1 and message.content.find('bulk_del_s') == -1 and message.content.find('quote') == -1 and message.content.find('ping') == -1:
         return
 
     is_command = False
@@ -662,6 +662,8 @@ async def on_message(message):
                     await cat.create_text_channel(split[1], overwrites=overs)
                 else:
                     await message.channel.send('Fuck Off non-believer!', delete_after=5)
+            elif command == 'ping':
+                await message.channel.send('Pong! %s ms' % round(pybot.latency * 1000))  
         if not is_command:
             await message.channel.send('I\'m not that enlightened!', delete_after=5)
     else:
@@ -812,5 +814,12 @@ async def on_guild_channel_delete(channel):
             vc.disconnect()
             break
 
+            
+"""
+@pybot.event
+async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
+    if str(payload.emoji) == '👌' and payload.user_id == pybot.user.id:
+        await (await pybot.get_channel(payload.channel_id).fetch_message(payload.message_id)).add_reaction(payload.emoji)
+"""
 
 pybot.run(str(os.environ.get('BOT_TOKEN')))
