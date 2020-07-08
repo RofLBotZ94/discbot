@@ -1,1 +1,1 @@
-Just a random bot
+Just a random multi-purpose bot on Discord
