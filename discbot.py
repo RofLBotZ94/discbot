@@ -1993,6 +1993,6 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
     if (str(payload.emoji) == '🐸' or str(payload.emoji) == '<:torta:635479359645286428>') and payload.user_id == pybot.user.id:
         await (await pybot.get_channel(payload.channel_id).fetch_message(payload.message_id)).add_reaction(payload.emoji)
 
-pybot.run(str(os.envir.get('BOT_TOKEN')))
+pybot.run(str(os.environ.get('BOT_TOKEN')))
 
 # :trap:594276902425067550
