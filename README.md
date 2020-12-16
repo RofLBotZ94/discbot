@@ -1,1 +1,2 @@
-# \textcolor{blue}{Just a random multi-purpose bot on Discord}
+# Just a random multi-purpose bot on Discord
+## His name is RofLSpawN
